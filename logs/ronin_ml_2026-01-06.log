@@ -1,4 +1,0 @@
-2026-01-06 09:00:47 | INFO     | main:startup_event:36 - 🚀 Ronin ML Backend starting up...
-2026-01-06 09:00:48 | INFO     | main:startup_event:37 - 📍 Ronin API Base URL: https://web-production-4fae.up.railway.app
-2026-01-06 09:00:48 | INFO     | main:startup_event:38 - 🔧 Debug Mode: False
-2026-01-06 09:00:48 | INFO     | main:startup_event:39 - ⏱️  Cache TTL: 300s
