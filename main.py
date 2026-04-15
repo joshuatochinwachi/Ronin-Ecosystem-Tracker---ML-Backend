@@ -111,8 +111,8 @@ class Config:
         }
         
         # Smart polling configuration
-        self.check_interval_seconds = int(os.getenv('CHECK_INTERVAL_SECONDS', 900))  # 15 minutes
-        self.min_training_samples = int(os.getenv('MIN_TRAINING_SAMPLES', 15))
+        self.check_interval_seconds = int(os.getenv('CHECK_INTERVAL_SECONDS', 3600))  # 60 minutes
+        self.min_training_samples = int(os.getenv('MIN_TRAINING_SAMPLES', 60))
         
         # Force retrain if data hasn't changed in X hours (safety fallback)
         self.max_stale_hours = int(os.getenv('MAX_STALE_HOURS', 24))  # 24 hours
@@ -835,7 +835,7 @@ background_task_running = False
 background_task_thread = None
 
 def background_polling_task():
-    """Background task that checks for data changes every 15 minutes"""
+    """Background task that checks for data changes every 60 minutes"""
     global background_task_running
     
     logger.info("🔄 Background polling task started")
@@ -928,7 +928,7 @@ def background_polling_task():
                 break
             
             # Exponential backoff: 60s, 120s, 240s, etc.
-            backoff_time = min(60 * (2 ** consecutive_failures), 900)  # Max 15 min
+            backoff_time = min(60 * (2 ** consecutive_failures), 3600)  # Max 60 min
             logger.warning(f"⏳ Backing off for {backoff_time}s before retry...")
             
             import time
@@ -943,7 +943,7 @@ async def lifespan(app: FastAPI):
     logger.info("=" * 60)
     logger.info("Starting Ronin Gaming ML Analytics API v1.0")
     logger.info(f"XGBoost: {XGBOOST_AVAILABLE} | LightGBM: {LIGHTGBM_AVAILABLE}")
-    logger.info(f"Smart Polling: Every {config.check_interval_seconds}s (15 min)")
+    logger.info(f"Smart Polling: Every {config.check_interval_seconds}s (60 min)")
     logger.info("=" * 60)
     
     # Check if models exist, if not, train on startup
@@ -1052,7 +1052,7 @@ async def root():
         "features": [
             "Game health prediction",
             "13 Ronin analytics endpoints",
-            "Smart polling (checks every 15 min)",
+            f"Smart polling (checks every {config.check_interval_seconds // 60} min)",
             "Multi-model ML ensemble",
             "Auto-training on data changes"
         ],
@@ -1209,7 +1209,7 @@ async def force_refresh(force: bool = Query(False, description="Force retrain ev
                 "elapsed_time_seconds": round(elapsed_time, 2),
                 "any_changes": False,
                 "predictions_available": predictions_exist,
-                "next_check": "Will check again in 15 minutes"
+                "next_check": f"Will check again in {config.check_interval_seconds // 60} minutes"
             }
         
         # If we get here, either data changed or force=true
